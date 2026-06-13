@@ -1,0 +1,18 @@
+User uploads resume PDF
+        ↓
+PDFPlumber extracts text
+        ↓
+User pastes Job Description (optional)
+        ↓
+Both sent to Gemini with a structured prompt
+        ↓
+Gemini analyzes resume vs JD
+        ↓
+Display:
+- ATS Score (0–100)
+- Strengths
+- Weaknesses
+- Missing Skills (compared to JD)
+- Suggestions to improve
+        ↓
+Save result to SQLite (history)
