@@ -1,48 +1,67 @@
 import streamlit as st
 import pdfplumber
+import google.generativeai as genai
 
-# Page Title
+# Configure Gemini
+
+with open("gemini_key.txt", "r") as file:
+    api_key = file.read().strip()
+
+genai.configure(api_key=api_key)
+
+model = genai.GenerativeModel("gemini-2.5-flash")
+
 st.title("AI Resume Analyzer")
 
-# PDF Upload
 uploaded_file = st.file_uploader(
     "Upload your Resume (PDF)",
     type=["pdf"]
 )
 
-# If a file is uploaded
 if uploaded_file is not None:
 
-    try:
-        all_text = ""
+    resume_text = ""
 
-        # Open PDF
-        with pdfplumber.open(uploaded_file) as pdf:
+    with pdfplumber.open(uploaded_file) as pdf:
 
-            # Loop through all pages
-            for page in pdf.pages:
+        for page in pdf.pages:
 
-                page_text = page.extract_text()
+            page_text = page.extract_text()
 
-                # Skip empty pages
-                if page_text:
-                    all_text += page_text + "\n\n"
+            if page_text:
+                resume_text += page_text + "\n"
 
-        # Check if any text was extracted
-        if all_text.strip():
+    st.subheader("Resume Preview")
 
-            st.success("Resume uploaded successfully!")
+    st.text_area(
+        "Extracted Text",
+        resume_text,
+        height=300
+    )
 
-            st.subheader("Extracted Resume Text")
+    if st.button("Analyze Resume"):
 
-            st.text_area(
-                "Preview",
-                all_text,
-                height=400
+        with st.spinner("Analyzing Resume..."):
+
+            response = model.generate_content(
+                f"""
+                Analyze this resume.
+
+                Give:
+
+                ATS Score (0-100)
+
+                Strengths
+
+                Weaknesses
+
+                Suggestions
+
+                Resume:
+                {resume_text}
+                """
             )
 
-        else:
-            st.warning("No readable text found in this PDF.")
+        st.subheader("AI Analysis")
 
-    except Exception as e:
-        st.error(f"Error reading PDF: {e}")
+        st.write(response.text)
