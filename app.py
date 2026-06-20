@@ -1,6 +1,7 @@
 import streamlit as st
 import pdfplumber
 import google.generativeai as genai
+import re
 
 # Load Gemini API Key
 with open("gemini_key.txt", "r") as file:
@@ -21,6 +22,12 @@ uploaded_file = st.file_uploader(
     type=["pdf"]
 )
 
+# Job Description Input
+job_description = st.text_area(
+    "Paste Job Description (Optional)",
+    height=200
+)
+
 if uploaded_file is not None:
 
     resume_text = ""
@@ -35,7 +42,7 @@ if uploaded_file is not None:
             if page_text:
                 resume_text += page_text + "\n"
 
-    # Show extracted text
+    # Resume Preview
     st.subheader("Resume Preview")
 
     st.text_area(
@@ -44,16 +51,18 @@ if uploaded_file is not None:
         height=300
     )
 
-    # Analyze button
+    # Analyze Button
     if st.button("Analyze Resume"):
 
         with st.spinner("Analyzing Resume..."):
 
             response = model.generate_content(
                 f"""
-                Analyze this resume.
+                You are an ATS Resume Analyzer.
 
-                Return the response EXACTLY in this format:
+                Analyze the resume against the provided Job Description.
+
+                Return EXACTLY in this format:
 
                 ATS Score:
                 <score>
@@ -66,9 +75,16 @@ if uploaded_file is not None:
                 - point 1
                 - point 2
 
+                Missing Skills:
+                - skill 1
+                - skill 2
+
                 Suggestions:
                 - point 1
                 - point 2
+
+                Job Description:
+                {job_description}
 
                 Resume:
                 {resume_text}
@@ -81,32 +97,71 @@ if uploaded_file is not None:
 
         try:
 
-            sections = analysis.split("Strengths:")
+            score = analysis.split("ATS Score:")[1].split("Strengths:")[0].strip()
 
-            score_part = sections[0]
+            strengths = analysis.split("Strengths:")[1].split("Weaknesses:")[0].strip()
 
-            remaining = sections[1]
+            weaknesses = analysis.split("Weaknesses:")[1].split("Missing Skills:")[0].strip()
 
-            strengths_part = remaining.split("Weaknesses:")[0]
+            missing_skills = analysis.split("Missing Skills:")[1].split("Suggestions:")[0].strip()
 
-            remaining = remaining.split("Weaknesses:")[1]
+            suggestions = analysis.split("Suggestions:")[1].strip()
 
-            weaknesses_part = remaining.split("Suggestions:")[0]
-
-            suggestions_part = remaining.split("Suggestions:")[1]
-
-            score = score_part.replace("ATS Score:", "").strip()
-
+            # ATS Score Card
             st.metric("ATS Score", score)
 
+            # Progress Bar
+            try:
+
+                match = re.search(r"\d+", score)
+
+                if match:
+
+                    numeric_score = int(match.group())
+
+                    st.progress(numeric_score / 100)
+
+            except:
+
+                pass
+
+            # Strengths
             st.success("Strengths")
-            st.write(strengths_part)
+            st.write(strengths)
 
+            # Weaknesses
             st.warning("Weaknesses")
-            st.write(weaknesses_part)
+            st.write(weaknesses)
 
+            # Missing Skills
+            st.error("Missing Skills")
+
+            skills = missing_skills.split("-")
+
+            for skill in skills:
+
+                skill = skill.strip()
+
+                if skill:
+
+                    st.markdown(
+                        f"""
+                        <span style="
+                        background-color:#ff4b4b;
+                        color:white;
+                        padding:6px 12px;
+                        border-radius:12px;
+                        margin:4px;
+                        display:inline-block;">
+                        {skill}
+                        </span>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+            # Suggestions
             st.info("Suggestions")
-            st.write(suggestions_part)
+            st.write(suggestions)
 
         except:
 
