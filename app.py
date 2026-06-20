@@ -3,6 +3,10 @@ import pdfplumber
 import google.generativeai as genai
 import re
 
+from database import save_analysis
+from database import get_history
+
+
 # Load Gemini API Key
 with open("gemini_key.txt", "r") as file:
     api_key = file.read().strip()
@@ -107,6 +111,13 @@ if uploaded_file is not None:
 
             suggestions = analysis.split("Suggestions:")[1].strip()
 
+            # Save to Database
+            save_analysis(
+                uploaded_file.name,
+                score,
+                analysis
+            )
+
             # ATS Score Card
             st.metric("ATS Score", score)
 
@@ -163,6 +174,33 @@ if uploaded_file is not None:
             st.info("Suggestions")
             st.write(suggestions)
 
+            # Download Button
+            st.download_button(
+                label="Download Analysis",
+                data=analysis,
+                file_name="resume_analysis.txt",
+                mime="text/plain"
+            )
+
         except:
 
             st.write(analysis)
+
+# History Section
+st.divider()
+
+st.subheader("Analysis History")
+
+history = get_history()
+
+if history:
+
+    for row in history:
+
+        st.write(
+            f"📄 {row[0]} | ATS Score: {row[1]} | {row[2]}"
+        )
+
+else:
+
+    st.write("No analysis history yet.")
