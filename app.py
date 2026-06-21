@@ -7,11 +7,13 @@ from database import save_analysis
 from database import get_history
 
 
-# Load Gemini API Key
 with open("gemini_key.txt", "r") as file:
     api_key = file.read().strip()
 
-# Configure Gemini
+if not api_key:
+    st.error("Gemini API Key not found.")
+    st.stop()
+
 genai.configure(api_key=api_key)
 
 # Load Gemini Model
