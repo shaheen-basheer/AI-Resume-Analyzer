@@ -2,18 +2,19 @@ import streamlit as st
 import pdfplumber
 import google.generativeai as genai
 import re
+import os
 
 from database import save_analysis
 from database import get_history
 
 
-with open("gemini_key.txt", "r") as file:
-    api_key = file.read().strip()
+
+
+api_key = os.getenv("GEMINI_API_KEY")
 
 if not api_key:
     st.error("Gemini API Key not found.")
     st.stop()
-
 genai.configure(api_key=api_key)
 
 # Load Gemini Model
