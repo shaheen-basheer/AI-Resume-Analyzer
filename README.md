@@ -112,15 +112,15 @@ AI_Resume_Analyzer/
 
 ![Upload](screenshots/upload.png)
 
-### AI Analysis - ATS Score
+### AI Analysis - ATS Score , strength and weeknesses
 
-![ATS Score](screenshots/analysis1.png)
+![ATS Score , Strengths and weeknesses](screenshots/analysis1.png)
 
-### AI Analysis - Strengths & Weaknesses
+### AI Analysis -  Missing Skills
 
-![Strengths and Weaknesses](screenshots/analysisimage2.png)
+![ Missing Skills](screenshots/analysisimage2.png)
 
-### AI Analysis - Suggestions & Missing Skills
+### AI Analysis - Suggestions
 
 ![Suggestions](screenshots/analysisimage3.png)
 
